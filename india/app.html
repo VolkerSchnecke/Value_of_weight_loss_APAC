@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ 
+ 
+<title>India cohort-level effects of weight change</title>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<link rel="icon" href="images/flag.ico">
+<link rel="stylesheet" href="css/jquery-ui.css"/>
+<link rel="stylesheet" href="css/styles.css"/>
+<link rel="stylesheet" href="css/font.css"/>
+
+</head>
+
+<body onLoad="initialiseDOM()">
+
+<div id="fullWindow" style="width:1900px">
+
+	<div style="display:inline-block;vertical-align:top;width:1900px">
+	<img src="images/logo.png" style="margin-top:10px; margin-right:50px; size:80">
+	
+	<div style="display:inline-block;vertical-align:top;width:450px;user-select:none;">
+	<h1>Settings</h1>
+	<div style="width:440px;margin-top:30px">
+		<label for="popSize"><strong>Population size:</strong></label>
+		<input type="text" id="popSize" name="popSize" style="width:80px; margin-left:65px">
+	</div>
+	<div style="margin-top:25px;">
+		<label id="genderLabel" class="selectorLabel" style="margin-right:140px"><strong>Gender:</strong></label>
+		<select name="genderSelector" id="genderSelector"></select>
+	</div>
+	<div style="width:440px;margin-top:25px">
+		<label id="bmiSliderLabel" for="bmiSlider" class="sliderLabel"><strong>BMI range:</strong> 25 - 50</label>
+		<div id="bmiSlider" class="slider"></div>
+	</div>
+	<div style="width:440px;margin-top:20px">
+		<label id="ageSliderLabel" for="ageSlider" class="sliderLabel"><strong>Age range:</strong> 20 - 69</label>
+		<div id="ageSlider" class="slider"></div>
+	</div>
+	<div style="width:440px;margin-top:20px">
+		<label id="yearSliderLabel" for="yearSlider" class="sliderLabel"><strong>Time frame:</strong> 10 years</label>
+		<div id="yearSlider" class="slider"></div>
+	</div>
+	<div style="width:440px;margin-top:20px">
+		<label id="changeSliderLabel" for="changeSlider" class="sliderLabel"><strong>Weight change:</strong> -10 %</label>
+		<div id="changeSlider" class="slider"></div>
+	</div>
+	</div>
+	
+	<div style="display:inline-block;vertical-align:top;width:450px;user-select:none;" id="costsDiv">
+	<h1>Costs</h1>
+	<div style="display:inline-block; vertical-align:top;">
+		<div class="columnHeader">Comorbidity</div>
+		<div id="complicationColumn" class="columnFirst"></div>
+	</div>
+	<div style="display:inline-block; vertical-align:top;">
+		<div class="columnHeader">Yearly costs</div>
+		<div id="yearlyCostsColumn" class="columnSmall"></div>
+	</div>
+	</div>
+
+	<div style="display:inline-block;vertical-align:top;width:550px">
+	<h1>Population</h1>
+	<div style="margin-top:22px">
+		<div style="display:inline-block;"><strong>Women / men:</strong></div>
+		<div style="display:inline-block;" id="genderSplit"></div>
+	</div>
+	<div style="margin-top:10px" id="prevalenceContainer"></div>
+	<div style="display:inline-block; vertical-align:top;">
+		<div class="columnHeaderTwoLine"></div>
+		<div id="comorbidityColumn" class="columnFirst"></div>
+	</div>
+	<div style="display:inline-block; vertical-align:top;">
+		<div class="columnHeaderTwoLine">Today<br></div>
+		<div id="prevalenceBaselineColumn" class="columnVerySmall"></div>
+	</div>
+	<div style="display:inline-block; vertical-align:top;">
+		<div id="prevalenceStableHeader" class="columnHeaderTwoLine" class="columnVerySmall">10-year<br>stable</div>
+		<div id="prevalenceStableColumn" class="columnVerySmall"></div>
+	</div>
+	<div style="display:inline-block; vertical-align:top;">
+		<div id="prevalenceChangeHeader" class="columnHeaderTwoLine" class="columnVerySmall">10-year<br>change</div>
+		<div id="prevalenceChangeColumn" class="columnVerySmall"></div>
+	</div>
+	</div>
+
+	<h1>Results</h1>
+	<div id="resultsText" style="width:1800px;height:50px;"></div>
+	<div id="resultsTable" style="display:inline-block; vertical-align:top">
+	<div style="display:inline-block; vertical-align:top;">
+		<div class="columnHeader">Comorbidity</div>
+		<div id="outcomesColumn1" class="columnFirst"></div>
+	</div>
+	<div style="display:inline-block; vertical-align:top;">
+		<div class="columnHeader">Baseline</div>
+		<div id="baselineCountsColumn" class="columnSmall"></div>
+	</div>
+	<div style="display:inline-block; vertical-align:top;">
+		<div class="columnHeader">Stable weight</div>
+		<div id="stableWeightCountsColumn" class="columnSmall"></div>
+	</div>
+	<div style="display:inline-block; vertical-align:top;">
+		<div class="columnHeader">Weight loss</div>
+		<div id="weightChangeCountsColumn" class="columnSmall"></div>
+	</div>
+	<div style="display:inline-block; vertical-align:top;">
+		<div class="columnHeader" id="differenceCountsHeader">Reduction in cases</div>
+		<div id="differenceCountsColumn" class="columnMedium"></div>
+	</div>
+	<div style="display:inline-block; vertical-align:top;">
+		<div class="columnHeader" id="relativeRiskReductionHeader">Relative reduction</div>
+		<div id="relativeRiskReductionColumn" class="columnMedium"></div>
+	</div>
+	<div style="display:inline-block; vertical-align:top;">
+		<div class="columnHeader" id="savingsLastYearHeader">Savings year 10</div>
+		<div id="savingsLastYearColumn" class="columnMedium"></div>
+	</div>
+	</div>
+		<div id="annualSavingsDiv" style="display:inline-block; vertical-align:top; width:420px; margin-left:160px">
+	<div style="display:inline-block; vertical-align:top;">
+		<div class="columnHeader" style="visibility:hidden">Years</div>
+		<div id="annualSavingsYearColumn" class="columnMedium"></div>
+	</div>
+		<div style="display:inline-block; vertical-align:top;">
+		<div class="columnHeader" id="annualSavingsHeader">Savings</div>
+		<div id="annualSavingsSavingsColumn" class="columnWide" style="width:200px"></div>
+	</div>
+	</div>
+
+
+	<h1>Costs</h1>
+	<div id="costsText" style="width:1900px"></div>
+	<div id="costsTable" style="display:inline-block; vertical-align:top; height:400px">
+	<div style="display:inline-block; vertical-align:top;">
+		<div class="columnHeader">&nbsp;</div>
+		<div style="display:inline-block;vertical-align:top">
+		<div class="columnHeader">Comorbidity</div>
+		<div id="outcomesColumn2" class="columnFirst"></div>
+		</div>
+	</div>
+	<div style="display:inline-block; vertical-align:top; margin-left:50px;">
+		<div class="columnHeader">Baseline (2022)</div>
+		<div style="display:inline-block;vertical-align:top">
+			<div class="columnHeader">Cases</div>
+			<div id="baselineCountsCostsColumn" class="columnSmall"></div>
+		</div>
+		<div style="display:inline-block;vertical-align:top">
+			<div class="columnHeader">Direct costs</div>		
+			<div id="baselineCostsColumn" class="columnWide"></div>
+		</div>
+	</div>
+	<div style="display:inline-block; vertical-align:top; margin-left:50px;">
+		<div id="stableWeightScenarioHeader" class="columnHeader">Stable weight scenario (2032)</div>
+		<div style="display:inline-block;vertical-align:top">
+			<div class="columnHeader">Cases</div>
+			<div id="stableWeightTotalCountsColumn" class="columnSmall"></div>
+		</div>
+		<div style="display:inline-block;vertical-align:top">
+			<div class="columnHeader">Direct costs</div>		
+			<div id="stableWeightCostsColumn" class="columnWide"></div>
+		</div>
+	</div>
+	<div style="display:inline-block; vertical-align:top; margin-left:50px;">
+		<div  id="weightChangeScenarioHeader" class="columnHeader">Weight loss scenario (2032)</div>
+		<div style="display:inline-block;vertical-align:top">
+			<div class="columnHeader">Cases</div>
+			<div id="weightChangeTotalCountsColumn" class="columnSmall"></div>
+		</div>
+		<div style="display:inline-block;vertical-align:top">
+			<div class="columnHeader">Direct costs</div>		
+			<div id="weightChangeCostsColumn" class="columnWide"></div>
+		</div>
+	</div>
+	<div style="display:inline-block; vertical-align:top; margin-left:60px;">
+		<div id="cumulativeSavingsHeader" class="columnHeader">10-year savings</div>
+		<div style="display:inline-block;vertical-align:top">
+			<div id="cumulativeSavingsSubheader" class="columnHeader">Cumulative savings</div>
+			<div id="cumulativeSavingsColumn" class="columnWide"></div>
+		</div>
+	</div>
+	</div>
+	
+</div>
+
+</div>
+
+<script type="text/javascript" src="js/jquery-3.5.1.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="js/d3.min.js"></script>
+<script type="text/javascript" src="js/india_incl_death.js"></script>
+<script type="text/javascript" src="js/india_baseline.js"></script>
+<script type="text/javascript" src="js/costs.js"></script>
+
+<script>
+"use strict";
+
+let outcomes = ['T2D', 'Asthma', 'SleepApnoea', 'Osteoarthritis',
+				'HF', 'CKD', 'Hypertension',
+				'Dyslipidaemia', 'AF', 'UnstableAnginaMI'];
+let outcomeLabels = ['Type 2 diabetes', 'Asthma', 'Sleep apnoea', 'Hip/knee osteoarthritis',
+					 'Heart failure', 'Chronic kidney disease', 'Hypertension',
+					 'Dyslipidaemia', 'Atrial fibrillation and flutter', 'Unstable angina / MI'];
+let outcomeLabelsLowerCase = ['type 2 diabetes', 'asthma', 'sleep apnoea', 'hip/knee osteoarthritis',
+	 'heart failure', 'chronic kidney disease', 'hypertension',
+	 'dyslipidaemia', 'atrial fibrillation and flutter', 'unstable angina / MI'];
+	 
+
+let bmiMin = 25, 
+	bmiMax = 50,
+	ageMin = 20,
+	ageMax = 69;
+let years = 10;
+let change = -10;
+let gender = "both";
+let popSize,
+	finalPopSize = 100000,
+	factor,
+	menN,
+	womenN;
+let data = [],
+	baseline = [],
+	populationStable = [],
+	populationChange = [];
+let yearlySavings = [],
+    cumulativeSavings = [],
+    prevalenceBaseline = [],
+	prevalenceStable = [],
+	prevalenceChange = [];
+let totalSavings = 0,
+	baselineCostsTotal = 0,
+	stableWeightCostsTotal = 0,
+	weightChangeCostsTotal = 0,
+	baselineCostsRatio = 0,
+	stableWeightCostsRatio = 0,
+	weightChangeCostsRatio = 0;
+
+
+function stats() {
+	
+	popSize = [];
+	womenN = [];
+	menN = [];
+	data = [];
+	baseline = [];
+	prevalenceBaseline = [],
+	prevalenceStable = [],
+	prevalenceChange = [];
+	
+	baseline[0] = [];
+	popSize[0] = 0;
+	womenN[0] = 0;
+	menN[0] = 0;
+	
+	outcomes.forEach(o => { 
+		baseline[0][o] = 0;
+	});
+	
+	for (let y = 1; y <= 10; y++ ) {
+		data[y] = [];
+		baseline[y] = [];
+		popSize[y] = 0;
+		womenN[y] = 0;
+		menN[y] = 0;
+		outcomes.forEach(o => { 
+			data[y][o] = {WC: 0, ST: 0};
+			baseline[y][o] = 0;
+		});
+	}
+
+	yearlySavings = [];
+	cumulativeSavings = [];
+	totalSavings = 0;
+	baselineCostsTotal = 0;
+	stableWeightCostsTotal = 0;
+	weightChangeCostsTotal = 0;
+	
+	for (let y = 1; y <= 10; y++) {
+		yearlySavings[y] = [];
+		yearlySavings[y].year = y;
+		outcomes.forEach(o => {
+			yearlySavings[y][o] = 0;
+		});
+		yearlySavings[y]['total'] = 0;
+		populationStable[y] = 0;
+		populationChange[y] = 0;
+	}
+	outcomes.forEach(o => {
+		cumulativeSavings[o] = 0;
+	});
+
+	// get the baseline prevalence and population size
+	indiaEstimationsGeneral.filter(d => d.year === 0
+			& d.BMI >= bmiMin 
+			& d.BMI <= bmiMax
+			& d.age_bin >= ageMin
+			& d.age_bin < ageMax
+			& (gender == "both" 
+				| (gender == "men" & d.gendermale === 1) 
+				| (gender == "women" & d.gendermale === 0))).forEach(d => {
+			outcomes.forEach(o => {
+				baseline[0][o] += d[o];
+			});
+			popSize[0] += d.N;
+			if (d.gendermale === 1) {
+				menN[0] += d.N;
+			} else {
+				womenN[0] += d.N;
+			}
+		});
+	// get the baseline prevalence for years 1 to 10 considering mortality
+	indiaBaseline.filter(d => d.year > 0
+			& d.change === change 
+			& d.BMI >= bmiMin 
+			& d.BMI <= bmiMax
+			& d.age_bin >= ageMin
+			& d.age_bin < ageMax
+			& (gender == "both" 
+				| (gender == "men" & d.gendermale === 1) 
+				| (gender == "women" & d.gendermale === 0))).forEach(d => {
+			outcomes.forEach(o => {
+				baseline[d.year][o] += d[o];
+			});
+			popSize[d.year] += d.N;
+			if (d.gendermale === 1) {
+				menN[d.year] += d.N;
+			} else {
+				womenN[d.year] += d.N;
+			}
+		});
+
+	
+	// add the number of additional cases for the weight change scenario
+	indiaEstimationsGeneral.filter(d => d.year > 0 
+			& d.change === change 
+			& d.BMI >= bmiMin 
+			& d.BMI <= bmiMax
+			& d.age_bin >= ageMin
+			& d.age_bin <= ageMax
+			& (gender == "both" 
+			   | (gender == "men" & d.gendermale === 1) 
+			   | (gender == "women" & d.gendermale === 0))).forEach(d => {
+			outcomes.forEach(o => {
+			    data[d.year][o].WC += d[o];
+			});
+			populationChange[d.year] += d.N;
+	});
+	
+	// add the number of additional cases for the stable weight scenario, didn't work in combination
+	// with the previous command, since when adding the change === 0 as an additional condition for
+	// the filter method, these were counted twice
+	indiaEstimationsGeneral.filter(d => d.year > 0 
+			& d.change === 0 
+			& d.BMI >= bmiMin 
+			& d.BMI <= bmiMax
+			& d.age_bin >= ageMin
+			& d.age_bin <= ageMax
+			& (gender == "both" 
+				| (gender == "men" & d.gendermale === 1) 
+				| (gender == "women" & d.gendermale === 0))).forEach(d => {
+			outcomes.forEach(o => {
+		    	data[d.year][o].ST += d[o];
+			});
+			populationStable[d.year] += d.N;
+	});
+	
+
+	// so far we have done the counts on the real cohort, now we need to scale all numbers to the 
+	// selected population size
+	factor = finalPopSize / popSize[0];
+	popSize[0] = Math.round(popSize[0] * factor);
+	womenN[0] = Math.round(womenN[0] * factor);
+	menN[0] = Math.round(menN[0] * factor);
+	outcomes.forEach(o => {
+		baseline[0][o] = Math.round(baseline[0][o] * factor);
+		for (let y = 1; y <= years; y++) {
+			baseline[y][o] = Math.round(baseline[y][o] * factor);
+			data[y][o].WC = Math.round(data[y][o].WC * factor);
+			data[y][o].ST = Math.round(data[y][o].ST * factor);
+		}
+	});
+	for (let y = 1; y <= years; y++) {
+		popSize[y] = Math.round(popSize[y] * factor);
+		womenN[y] = Math.round(womenN[y] * factor);
+		menN[y] = Math.round(menN[y] * factor);
+		populationStable[y] *= factor;
+		populationChange[y] *= factor;
+	}
+	$('#genderSplit').text(d3.format(".1f")(100 * womenN[0] / popSize[0]) + "% / " + d3.format(".1f")(100 * menN[0] / popSize[0]) + "%");
+
+
+	outcomes.forEach(o => {
+		prevalenceBaseline[o] = 100 * baseline[0][o] / popSize[0];
+		prevalenceStable[o] = 100 * (baseline[years][o] + data[years][o].ST) / popSize[years];
+		prevalenceChange[o] = 100 * (baseline[years][o] + data[years][o].WC) / popSize[years];
+	});
+
+	for (let y = 1; y <= years; y++) {
+		outcomes.forEach(o => { 
+			yearlySavings[y][o] += Math.round((data[y][o].ST - data[y][o].WC) * costs[o]);
+			cumulativeSavings[o] += yearlySavings[y][o];
+			totalSavings += yearlySavings[y][o];
+			yearlySavings[y]['total'] += yearlySavings[y][o];
+		});
+	}
+		
+	outcomes.forEach(o => { 
+		
+		baselineCostsTotal += costs[o] * baseline[0][o];
+		stableWeightCostsTotal += costs[o] * (baseline[years][o] + data[years][o].ST);
+		weightChangeCostsTotal += costs[o] * (baseline[years][o] + data[years][o].WC);
+		
+		$('#baselineCounts' + o).text(d3.format(",.3r")(baseline[0][o]));
+		$('#baselineCountsCosts' + o).text(d3.format(",.3r")(baseline[0][o]));
+		$('#baselineCosts' + o).html(d3.format(",.4r")(Math.round(costs[o] * baseline[0][o])) + " " + currency);
+		$('#stableWeightCounts' + o).text(d3.format(",.3r")(data[years][o].ST));
+		$('#stableWeightTotalCounts' + o).text(d3.format(",.3r")(baseline[years][o] + data[years][o].ST));
+		$('#stableWeightCosts' + o).text(d3.format(",.4r")(costs[o] * (baseline[years][o] + data[years][o].ST)) + " " + currency);
+		$('#weightChangeCounts' + o).text(d3.format(",.3r")(data[years][o].WC));
+		$('#weightChangeTotalCounts' + o).text(d3.format(",.3r")(baseline[years][o] + data[years][o].WC));
+		$('#weightChangeCosts' + o).text(d3.format(",.4r")(costs[o] * (baseline[years][o] + data[years][o].WC)) + " " + currency);
+		if (Math.abs(data[years][o].ST - data[years][o].WC) >= 1000) {
+			$('#differenceCounts' + o).text(d3.format(",.3r")(Math.abs(data[years][o].ST - data[years][o].WC)));
+		} else {
+			$('#differenceCounts' + o).text(d3.format(",")(Math.abs(data[years][o].ST - data[years][o].WC)));
+		}
+		if ( data[years][o].ST > 0 ) {
+			$('#relativeRiskReduction' + o).text(d3.format(".1f")(Math.abs(100 * (data[years][o].ST - data[years][o].WC) / data[years][o].ST)) + "%");
+		} else {
+			$('#relativeRiskReduction' + o).text("0.0%");			
+		}
+		$('#savingsLastYear' + o).html(d3.format(",.4r")(Math.abs(yearlySavings[years][o])) + " " + currency);
+		$('#prevalenceBaseline' + o).text(d3.format(".1f")(prevalenceBaseline[o]) + "%");
+		$('#prevalenceStable' + o).text(d3.format(".1f")(prevalenceStable[o]) + "%");
+		$('#prevalenceChange' + o).text(d3.format(".1f")(prevalenceChange[o]) + "%");
+		$('#cumulativeSavings' + o).text(d3.format(",.4r")(Math.abs(cumulativeSavings[o])) + " " + currency);
+	});
+	
+	for (let y = 1; y <= years; y++) {
+		$('#annualSavings' + y).html(d3.format(",.4r")(Math.abs(yearlySavings[y]['total'])) + " " + currency);
+	}
+	$('#cumulativeSavings').html('<strong>' + d3.format(",.4r")(Math.abs(totalSavings)) + ' ' + currency + '</strong>');
+	$('#cumulativeSavingsPerPatient').html('<strong>' + d3.format(",.0f")(Math.abs(totalSavings / populationChange[years])) + ' ' + currency + '</strong>');
+
+	$('#baselineCostsTotal').html('<strong>' + d3.format(",.4r")(Math.abs(baselineCostsTotal)) + ' ' + currency + '</strong>');
+	$('#baselineCostsPerPatient').html('<strong>' + d3.format(",.0f")(Math.abs(baselineCostsTotal / popSize[0])) + ' ' + currency + '</strong>');
+	$('#stableWeightCostsTotal').html('<strong>' + d3.format(",.4r")(Math.abs(stableWeightCostsTotal)) + ' ' + currency + '</strong>');
+	$('#stableWeightCostsPerPatient').html('<strong>' + d3.format(",.0f")(Math.abs(stableWeightCostsTotal / populationStable[years])) + ' ' + currency + '</strong>');
+	$('#weightChangeCostsTotal').html('<strong>' + d3.format(",.4r")(Math.abs(weightChangeCostsTotal)) + ' ' + currency + '</strong>');
+	$('#weightChangeCostsPerPatient').html('<strong>' + d3.format(",.0f")(Math.abs(weightChangeCostsTotal / populationChange[years])) + ' ' + currency + '</strong>');
+	$('#cumulativeTotalSavings').html('<strong>' + d3.format(",.4r")(Math.abs(totalSavings)) + ' ' + currency + '</strong>');
+	$('#cumulativeTotalSavingsPerPatient').html('<strong>' + d3.format(",.0f")(Math.abs(totalSavings / populationChange[years])) + ' ' + currency + '</strong>');
+
+	let text = '<p>';
+
+	text += 'Given an Indian cohort of ' + d3.format(",.3r")(finalPopSize);
+	if (gender === "both") {
+		text += ' individuals';
+	} else {
+		if (gender === "men") {
+			text += ' men';
+		} else {
+			text += ' women'
+		}
+	}
+	text += ' with BMI between ' + bmiMin + ' and ' + bmiMax + ' and age from ' + ageMin + ' to ' + ageMax;
+	if (change < 0) {
+		text += ', a ' + Math.abs(change) + '% weight loss is estimated to result in fewer incident cases for the ten obesity-related comorbidities and consequently cost savings over the coming ';
+		if (years > 1) {
+			text += years + ' years.</p>';
+		} else {
+			text += ' year.</p>';
+		}
+	} else {
+		text += ', a ' + change + '% weight gain is estimated to result in more incident cases for the ten obesity-related comorbidities and consequently additional treatment costs over the coming ';
+		if (years > 1) {
+			text += years + ' years.</p>';
+		} else {
+			text += ' year.</p>';
+		}
+	}
+
+	$('#resultsText').html(text);
+	
+	text = '<p>Since we know the current prevalance for the ten comorbidities in the cohort of ' + d3.format(",.3r")(popSize[0])
+	if (gender === "both") {
+		text += ' individuals';
+	} else {
+		if (gender === "men") {
+			text += ' men';
+		} else {
+			text += ' women'
+		}
+	}
+	text += ', we can calculate the direct costs for each comorbidity in 2022. ';
+	text += 'The model estimates the number of incident cases over the coming ';
+	if (years > 1) {
+		text += years + ' years ';
+	} else {
+		text += ' year ';
+	}
+	text += 'for two scenarios, the stable weight scenario, where all individuals have had over the recent years the BMI they have today, and the ';
+	if (change < 0) {
+		text += 'weight loss scenario, where each individual had lost ' + Math.abs(change) + '% weight.';
+	} else {
+		if (change > 0) {
+			text += 'weight gain scenario, where each individual had gained ' + change + '% weight.';
+		} 
+	}
+	text += ' Adding the costs for treating these incident cases, we can see the expected yearly costs in ' + (2022 + years) + ' for these two scenarios.';
+	if (change < 0) {
+		text += ' We can further see the estimated cumulative savings over the coming ';
+	} else {
+		text += ' We can further see the estimated cumulative additional costs for the coming ';
+	}
+	if (years > 1) {
+		text += years + ' years.</p>';
+	} else {
+		text += ' year.</p>';
+	}
+	$('#costsText').html(text);
+
+}
+
+
+function initialiseDOM() {
+		
+	$("#popSize").val(d3.format(",")(finalPopSize));
+	
+	// the population size input field
+	$("#popSize").change(e => {
+		 let value = $("#popSize").val().replaceAll(",","");
+		 if (value >= 1000 && value <= 1000000) {
+			 finalPopSize = value;
+			 stats();		 
+		 }
+		 $("#popSize").val(d3.format(",")(Math.round(finalPopSize)));
+		 $("#popSize").blur();
+	});
+	
+	// gender selector
+	$.each({'both': 'Both', 'women': 'Women', 'men': 'Men'}, (key, value) => {
+	    $('#genderSelector').append($('<option>', { 
+	        value: key,
+	        text : value 
+	    }));
+	});
+	$('#genderSelector').selectmenu({
+		
+		width: 175,
+		change: function(event, ui) {
+			gender =  $(this).children("option:selected").val();
+			stats();
+		}
+	
+	});
+	
+	// the two-handle slider for selecting the inclusion range for the bmi
+	$("#bmiSlider").slider({
+	
+		range: true,
+		min: 25,
+		max: 50,
+		values: [25, 50],
+		
+		slide: function(event, ui) {
+					bmiMin = ui.values[0];
+					bmiMax = ui.values[1];					
+					$("#bmiSliderLabel").html("<strong>BMI range:</strong> " + bmiMin + " - " + bmiMax );
+					stats();
+				}			
+
+	});
+
+	$("#ageSlider").slider({
+		
+		range: true,
+		min: 20,
+		max: 70,
+		values: [20, 70],
+		step: 10,
+		
+		slide: function(event, ui) {
+			
+					if (ui.values[0] !== ui.values[1]) {
+						ageMin = ui.values[0];
+						ageMax = ui.values[1] - 1;
+						$("#ageSliderLabel").html("<strong>Age range:</strong> " + ageMin + " - " + ageMax );
+						stats();
+					} else {
+						// don't let the handles overlap
+						return false;
+					}
+				}				
+	});
+
+	// the slider for selecting the number of years to estimate the costs for
+	$("#yearSlider").slider({
+		
+		min: 1,
+		max: 10,
+		value: 10,
+		
+		slide: function(event, ui) {
+
+					years = ui.value;
+					
+					if (years > 1) {
+						$("#yearSliderLabel").html("<strong>Time frame:</strong> " + years + ' years');
+					} else {
+						$("#yearSliderLabel").html("<strong>Time frame:</strong> " + years + ' years');						
+					}
+					$("#prevalenceStableHeader").html(years + "-year<br>stable");
+					$("#prevalenceChangeHeader").html(years + "-year<br>change");
+					$("#stableWeightCostsHeader").text("Direct costs year " + years);
+					$("#weightChangeCostsHeader").text("Direct costs year " + years);
+					$("#stableWeightScenarioHeader").text("Stable weight scenario (" + (2022 + years) + ")");
+				
+					if (change < 0) {
+						 $('#weightChangeResultsHeader').text("Weight loss");
+						 $('#weightChangeScenarioHeader').text("Weight loss scenario (" + (2022 + years) + ")");
+						 $('#savingsLastYearHeader').text('Savings year ' + years);
+						 $('#cumulativeSavingsHeader').text(years + "-year savings");
+					} else {
+						 $('#weightChangeResultsHeader').text("Weight gain");
+						 $('#weightChangeScenarioHeader').text("Weight gain scenario (" + (2022 + years) + ")");
+						 $('#savingsLastYearHeader').text('Extra costs year ' + years);
+						 $('#cumulativeSavingsHeader').text(years + "-year additional costs");
+					}
+				
+					for (let y = 1; y <= 10; y++) {
+						if (y > years) {
+							$('#annualSavings' + y).css("display", "none");
+							$('#annualSavingsYear' + y).css("display", "none");
+						} else {
+							$('#annualSavings' + y).css("display", "block");							
+							$('#annualSavingsYear' + y).css("display", "block");							
+						}
+					}
+					
+					stats();
+					
+				}				
+	});
+
+	// the slider for selecting the weight change
+	$("#changeSlider").slider({
+		
+		min: 0,
+		max: 26,
+		value: 10,
+		
+		slide: function(event, ui) {
+
+					let valueMap = [-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,5,10,15,20];
+					change = valueMap[ui.value];
+					$("#changeSliderLabel").html("<strong>Weight change:</strong> " + change + ' %');
+					
+					if (change < 0) {
+						 $('#weightChangeResultsHeader').text("Weight loss");
+						 $('#weightChangeScenarioHeader').text("Weight loss scenario (" + (2022 + years) + ")");
+						 $('#savingsLastYearHeader').text('Savings year ' + years);
+						 $('#cumulativeSavingsHeader').text(years + "-year savings");
+						 $('#differenceCountsHeader').text('Reduction in cases');
+						 $('#relativeRiskReductionHeader').text('Relative reduction');
+						 $('#savingsLastYearHeader').text('Savings year ' + years);
+						 $('#annualSavingsHeader').text('Savings');
+						 $('#cumulativeSavingsHeader').text(years + '-year savings');
+						 $('#cumulativeSavingsSubheader').text('Cumulative savings');
+					} else {
+						 $('#weightChangeResultsHeader').text("Weight gain");
+						 $('#weightChangeScenarioHeader').text("Weight gain scenario (" + (2022 + years) + ")");
+						 $('#savingsLastYearHeader').text('Extra costs year ' + years);
+						 $('#cumulativeSavingsHeader').text(years + "-year additional costs");
+						 $('#differenceCountsHeader').text('Increase in cases');
+						 $('#relativeRiskReductionHeader').text('Relative increase');						
+						 $('#savingsLastYearHeader').text('Extra costs year ' + years);
+						 $('#annualSavingsHeader').text('Additional costs');
+						 $('#cumulativeSavingsHeader').text(years + '-year additional costs');
+						 $('#cumulativeSavingsSubheader').text('Cumulative costs');
+					}
+					stats();
+					
+				}				
+	});
+
+	outcomes.forEach((o, i) => {
+		$("#outcomesColumn1").append('<div class="' + o + '">' + outcomeLabels[i] + '</div>');
+		$("#prevalenceColumn").append('<div id="prevalence' + o + '" class="' + o + '" style="margin-right:30px"></div>');
+		$("#baselineCountsColumn").append('<div id="baselineCounts' + o + '" class="' + o + '" style="margin-right:30px"></div>');
+		$("#baselineCountsCostsColumn").append('<div id="baselineCountsCosts' + o + '" class="' + o + '" style="margin-right:30px"></div>');
+		$("#stableWeightCountsColumn").append('<div id="stableWeightCounts' + o + '" class="' + o + '" style="margin-right:30px"></div>');
+		$("#stableWeightTotalCountsColumn").append('<div id="stableWeightTotalCounts' + o + '" class="' + o + '" style="margin-right:30px"></div>');
+		$("#weightChangeCountsColumn").append('<div id="weightChangeCounts' + o + '" class="' + o + '" style="margin-right:30px"></div>');
+		$("#weightChangeTotalCountsColumn").append('<div id="weightChangeTotalCounts' + o + '" class="' + o + '" style="margin-right:30px"></div>');
+		$("#differenceCountsColumn").append('<div id="differenceCounts' + o + '" class="' + o + '" style="margin-right:30px"></div>');
+		$("#savingsColumn").append('<div id="savings' + o + '" class="' + o + '"></div>');
+		$("#relativeRiskReductionColumn").append('<div id="relativeRiskReduction' + o + '" class="' + o + '" style="margin-right:30px"></div>');
+		$('#complicationColumn').append('<div style="margin:2px">' + outcomeLabels[i] + '</div>');
+		let c = d3.format(",")(costs[o]);
+		$('#yearlyCostsColumn').append('<div><input style="width:60px;margin-bottom:1px" name="' + o + 'Costs" id="' + o + 'Costs" value="' + c + '"> ' + currency + '</div>');
+		$('#' + o + 'Costs').change(e => {
+			let value = $('#' + o + 'Costs').val().replaceAll(",","");
+			if (value >= 0 && value <= 99999999) {
+				costs[o] = value;
+				stats();
+			} 
+			$('#' + o + 'Costs').val(d3.format(",")(costs[o]));
+			$('#' + o + 'Costs').blur();
+		})
+		$('#savingsLastYearColumn').append('<div id="savingsLastYear' + o + '" class="' + o + '"></div>');
+
+		$("#outcomesColumn2").append('<div class="' + o + '">' + outcomeLabels[i] + '</div>');
+		$("#baselineCostsColumn").append('<div id="baselineCosts' + o + '" class="' + o + '" style="margin-right:30px"></div>');
+		$("#stableWeightCostsColumn").append('<div id="stableWeightCosts' + o + '" class="' + o + '" style="margin-right:30px"></div>');
+		$("#weightChangeCostsColumn").append('<div id="weightChangeCosts' + o + '" class="' + o + '" style="margin-right:30px"></div>');
+		$("#cumulativeSavingsColumn").append('<div id="cumulativeSavings' + o + '" class="' + o + '" style="margin-right:30px"></div>');
+
+		$('#comorbidityColumn').append("<div>" + outcomeLabels[i] + "</div>");
+		$('#prevalenceBaselineColumn').append("<div id='prevalenceBaseline" + o + "' style='margin-right:10px'></div>");
+		$('#prevalenceStableColumn').append("<div id='prevalenceStable" + o + "' style='margin-right:10px'></div>");
+		$('#prevalenceChangeColumn').append("<div id='prevalenceChange" + o + "' style='margin-right:10px'></div>");
+	});
+	for (let y = 1; y <= 10; y++) {
+		$('#annualSavingsYearColumn').append('<div id="annualSavingsYear' + y + '">Year ' + y + '</div>');
+		$('#annualSavingsSavingsColumn').append('<div id="annualSavings' + y +'"></div>');
+	}
+	$('#annualSavingsYearColumn').append('<div>Cumulative total</div>');
+	$('#annualSavingsYearColumn').append('<div>Per patient</div>');
+	$('#annualSavingsSavingsColumn').append('<div id="cumulativeSavings"></div>');
+	$('#annualSavingsSavingsColumn').append('<div id="cumulativeSavingsPerPatient"></div>');
+
+	$("#outcomesColumn2").append('<div style="margin-top:5px;font-weight:bold">Total</div>');
+	$("#outcomesColumn2").append('<div style="margin-top:5px;font-weight:bold">Per patient</div>');
+	$("#baselineCostsColumn").append('<div id="baselineCostsTotal" style="margin-right:30px;margin-top:5px"></div>');
+	$("#baselineCostsColumn").append('<div id="baselineCostsPerPatient" style="margin-right:30px;margin-top:5px"></div>');
+	$("#stableWeightCostsColumn").append('<div id="stableWeightCostsTotal" style="margin-right:30px;margin-top:5px"></div>');
+	$("#stableWeightCostsColumn").append('<div id="stableWeightCostsPerPatient" style="margin-right:30px;margin-top:5px"></div>');
+	$("#weightChangeCostsColumn").append('<div id="weightChangeCostsTotal" style="margin-right:30px;margin-top:5px"></div>');
+	$("#weightChangeCostsColumn").append('<div id="weightChangeCostsPerPatient" style="margin-right:30px;margin-top:5px"></div>');
+	$('#cumulativeSavingsColumn').append('<div id="cumulativeTotalSavings" style="margin-right:30px;margin-top:5px"></div>');
+	$('#cumulativeSavingsColumn').append('<div id="cumulativeTotalSavingsPerPatient" style="margin-right:30px;margin-top:5px"></div>');
+
+	stats();
+
+
+
+}
+
+</script>
+	
+</body>
+
+
+</html>
+	
